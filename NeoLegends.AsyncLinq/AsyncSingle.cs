@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
@@ -26,7 +26,7 @@ namespace System.Linq
                 workingCopy.Remove(t.Result);
                 if (workingCopy.Any())
                 {
-                    throw new InvalidOperationException("Multiple elements were returned.");
+                    throw new InvalidOperationException("Sequence contains more than one element");
                 }
                 else
                 {
