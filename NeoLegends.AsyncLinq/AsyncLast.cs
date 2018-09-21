@@ -73,5 +73,38 @@ namespace System.Linq
             }
             return current.Result;
         }
+        
+        public static async Task<T> LastAsync<T>(this IEnumerable<Task<T>> collection, Func<T, Task<bool>> predicate)
+        {
+            Contract.Requires<ArgumentNullException>(collection != null);
+            Contract.Requires<ArgumentNullException>(predicate != null);
+
+            foreach (Task<T> task in collection.Reverse())
+            {
+                T result = await task.ConfigureAwait(false);
+                if (await predicate(result).ConfigureAwait(false))
+                {
+                    return result;
+                }
+            }
+
+            throw new InvalidOperationException("Sequence contains no matching element");
+        }
+        
+        public static async Task<T> LastAsync<T>(this Task<IEnumerable<T>> collection, Func<T, Task<bool>> predicate)
+        {
+            Contract.Requires<ArgumentNullException>(collection != null);
+            Contract.Requires<ArgumentNullException>(predicate != null);
+
+            foreach (T item in (await collection.ConfigureAwait(false)).Reverse())
+            {
+                if (await predicate(item).ConfigureAwait(false))
+                {
+                    return item;
+                }
+            }
+
+            throw new InvalidOperationException("Sequence contains no matching element");
+        }
     }
 }
