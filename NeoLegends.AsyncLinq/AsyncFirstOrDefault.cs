@@ -76,5 +76,60 @@ namespace System.Linq
 
             return default(T);
         }
+        
+        public static async Task<T> FirstFinishedOrDefaultAsync<T>(this IEnumerable<Task<T>> collection, Func<T, Task<bool>> predicate)
+        {
+            Contract.Requires<ArgumentNullException>(collection != null);
+            Contract.Requires<ArgumentNullException>(predicate != null);
+
+            List<Task<T>> workingCopy = collection.ToList();
+            while (workingCopy.Any())
+            {
+                Task<T> finishedTask = await Task.WhenAny(workingCopy).ConfigureAwait(false);
+                if (await predicate(finishedTask.Result).ConfigureAwait(false))
+                {
+                    return finishedTask.Result;
+                }
+                else
+                {
+                    workingCopy.Remove(finishedTask);
+                }
+            }
+
+            return default(T);
+        }
+        
+        public static async Task<T> FirstOrDefaultAsync<T>(this IEnumerable<Task<T>> collection, Func<T, Task<bool>> predicate)
+        {
+            Contract.Requires<ArgumentNullException>(collection != null);
+            Contract.Requires<ArgumentNullException>(predicate != null);
+
+            foreach (Task<T> task in collection)
+            {
+                T result = await task.ConfigureAwait(false);
+                if (await predicate(result).ConfigureAwait(false))
+                {
+                    return result;
+                }
+            }
+
+            return default(T);
+        }
+        
+        public static async Task<T> FirstOrDefaultAsync<T>(this Task<IEnumerable<T>> collection, Func<T, Task<bool>> predicate)
+        {
+            Contract.Requires<ArgumentNullException>(collection != null);
+            Contract.Requires<ArgumentNullException>(predicate != null);
+
+            foreach (T item in await collection.ConfigureAwait(false))
+            {
+                if (await predicate(item).ConfigureAwait(false))
+                {
+                    return item;
+                }
+            }
+
+            return default(T);
+        }
     }
 }
