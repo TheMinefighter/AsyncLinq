@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace System.Linq
 {
+    //Methods with async keySelectors are not possible, due to the fact that all the Lookup methods are internal
     public static partial class AsyncEnumerable
     {
         public static async Task<ILookup<TKey, T>> ToLookupAsync<T, TKey>(this Task<IEnumerable<T>> collection, Func<T, TKey> keySelector)
