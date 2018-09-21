@@ -38,7 +38,7 @@ namespace System.Linq
                 }
             }
 
-            throw new InvalidOperationException("No element matched the predicate or the collection was empty.");
+            throw new InvalidOperationException("Sequence contains no matching element");
         }
 
         public static async Task<T> LastFinishedAsync<T>(this IEnumerable<Task<T>> collection)
