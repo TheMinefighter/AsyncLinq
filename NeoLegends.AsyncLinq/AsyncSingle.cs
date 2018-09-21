@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
@@ -43,12 +43,33 @@ namespace System.Linq
             return (await collection.ConfigureAwait(false)).Single(predicate);
         }
 
-        public static Task<T> SingleAsync<T>(this IEnumerable<Task<T>> collection, Func<T, bool> predicate)
+        public static async Task<T> SingleAsync<T>(this IEnumerable<Task<T>> collection, Func<T, bool> predicate)
         {
             Contract.Requires<ArgumentNullException>(collection != null);
             Contract.Requires<ArgumentNullException>(predicate != null);
+            bool any = false;
+            T instanceFound = default(T); //default will never be returned only initializing that C# is happy
+            foreach (Task<T> item in collection)
+            {
+                T awaitedItem = await item.ConfigureAwait(false);
+                if (predicate(awaitedItem))
+                {
+                    if (any)
+                    {
+                        throw new InvalidOperationException("Sequence contains more than one matching element");
+                    }
 
-            throw new NotImplementedException();
+                    any = true;
+                    instanceFound = awaitedItem;
+                }
+            }
+
+            if (!any)
+            {
+                throw new InvalidOperationException("Sequence contains no matching element");
+            }
+
+            return instanceFound;
         }
     }
 }
