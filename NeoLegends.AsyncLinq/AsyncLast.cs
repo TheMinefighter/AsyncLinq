@@ -106,5 +106,24 @@ namespace System.Linq
 
             throw new InvalidOperationException("Sequence contains no matching element");
         }
+        
+        public static async Task<T> LastFinishedAsync<T>(this IEnumerable<Task<T>> collection, Func<T, Task<bool>> predicate)
+        {
+            Contract.Requires<ArgumentNullException>(collection != null);
+            Contract.Requires<ArgumentNullException>(predicate != null);
+
+            List<Task<T>> workingCopy = collection.ToList();
+            Task<T> current = null;
+            while (workingCopy.Any())
+            {
+                Task<T> finishedTask = await Task.WhenAny(workingCopy).ConfigureAwait(false);
+                if (await predicate(finishedTask.Result).ConfigureAwait(false))
+                {
+                    current = finishedTask;
+                    workingCopy.Remove(current);
+                }
+            }
+            return current.Result;
+        }
     }
 }
