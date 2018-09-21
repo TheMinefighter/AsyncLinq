@@ -59,5 +59,52 @@ namespace System.Linq
 
             return instanceFound;
         }
+
+        public static async Task<T> SingleOrDefaultAsync<T>(this IEnumerable<Task<T>> collection, Func<T, Task<bool>> predicate)
+        {
+            Contract.Requires<ArgumentNullException>(collection != null);
+            Contract.Requires<ArgumentNullException>(predicate != null);
+            bool any = false;
+            T instanceFound = default(T); 
+            foreach (Task<T> item in collection)
+            {
+                T awaitedItem = await item.ConfigureAwait(false);
+                if (await predicate(awaitedItem).ConfigureAwait(false))
+                {
+                    if (any)
+                    {
+                        throw new InvalidOperationException("Sequence contains more than one matching element");
+                    }
+
+                    any = true;
+                    instanceFound = awaitedItem;
+                }
+            }
+
+            return instanceFound;
+        }
+
+        public static async Task<T> SingleOrDefaultAsync<T>(this Task<IEnumerable<T>> collection, Func<T, Task<bool>> predicate)
+        {
+            Contract.Requires<ArgumentNullException>(collection != null);
+            Contract.Requires<ArgumentNullException>(predicate != null);
+            bool any = false;
+            T instanceFound = default(T);
+            foreach (T item in await collection.ConfigureAwait(false))
+            {
+                if (await predicate(item).ConfigureAwait(false))
+                {
+                    if (any)
+                    {
+                        throw new InvalidOperationException("Sequence contains more than one matching element");
+                    }
+
+                    any = true;
+                    instanceFound = item;
+                }
+            }
+            
+            return instanceFound;
+        }
     }
 }
