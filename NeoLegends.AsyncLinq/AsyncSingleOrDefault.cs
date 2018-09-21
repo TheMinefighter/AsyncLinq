@@ -36,12 +36,28 @@ namespace System.Linq
             return (await collection.ConfigureAwait(false)).SingleOrDefault(predicate);
         }
 
-        public static Task<T> SingleOrDefaultAsync<T>(this IEnumerable<Task<T>> collection, Func<T, bool> predicate)
+        public static async Task<T> SingleOrDefaultAsync<T>(this IEnumerable<Task<T>> collection, Func<T, bool> predicate)
         {
             Contract.Requires<ArgumentNullException>(collection != null);
             Contract.Requires<ArgumentNullException>(predicate != null);
+            bool any = false;
+            T instanceFound = default(T);
+            foreach (Task<T> item in collection)
+            {
+                T awaitedItem = await item.ConfigureAwait(false);
+                if (predicate(awaitedItem))
+                {
+                    if (any)
+                    {
+                        throw new InvalidOperationException("Sequence contains more than one matching element");
+                    }
 
-            throw new NotImplementedException();
+                    any = true;
+                    instanceFound = awaitedItem;
+                }
+            }
+
+            return instanceFound;
         }
     }
 }
