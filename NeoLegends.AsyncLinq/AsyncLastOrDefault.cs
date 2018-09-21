@@ -50,5 +50,38 @@ namespace System.Linq
 
             return default(T);
         }
+        
+        public static async Task<T> LastOrDefaultAsync<T>(this IEnumerable<Task<T>> collection, Func<T, Task<bool>> predicate)
+        {
+            Contract.Requires<ArgumentNullException>(collection != null);
+            Contract.Requires<ArgumentNullException>(predicate != null);
+
+            foreach (Task<T> task in collection.Reverse())
+            {
+                T result = await task.ConfigureAwait(false);
+                if (await predicate(result).ConfigureAwait(false))
+                {
+                    return result;
+                }
+            }
+
+            return default(T);
+        }
+        
+        public static async Task<T> LastOrDefaultAsync<T>(this Task<IEnumerable<T>> collection, Func<T, Task<bool>> predicate)
+        {
+            Contract.Requires<ArgumentNullException>(collection != null);
+            Contract.Requires<ArgumentNullException>(predicate != null);
+
+            foreach (T item in (await collection.ConfigureAwait(false)).Reverse())
+            {
+                if (await predicate(item).ConfigureAwait(false))
+                {
+                    return item;
+                }
+            }
+
+            return default(T);
+        }
     }
 }
