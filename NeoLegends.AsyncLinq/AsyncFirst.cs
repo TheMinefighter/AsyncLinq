@@ -108,13 +108,13 @@ namespace System.Linq
 
             throw new InvalidOperationException("Sequence contains no matching element");
         }
-        
-        public static async Task<T> FirstAsync<T>(this Task<IEnumerable<T>> collection, Func<T, Task<bool>> predicate)
+
+        public static async Task<T> FirstAsync<T>(this IEnumerable<T> collection, Func<T, Task<bool>> predicate)
         {
             Contract.Requires<ArgumentNullException>(collection != null);
             Contract.Requires<ArgumentNullException>(predicate != null);
 
-            foreach (T item in await collection.ConfigureAwait(false))
+            foreach (T item in collection)
             {
                 if (await predicate(item).ConfigureAwait(false))
                 {

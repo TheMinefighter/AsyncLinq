@@ -37,9 +37,22 @@ namespace System.Linq
             Contract.Requires<ArgumentNullException>(collection != null);
             Contract.Requires<ArgumentNullException>(predicate != null);
 
-            IEnumerable<T> evaluatedCollection = await collection.ConfigureAwait(false);
             long count = 0;
-            foreach (T item in evaluatedCollection) {
+            foreach (T item in await collection.ConfigureAwait(false)) {
+                if (await predicate(item).ConfigureAwait(false)) {
+                    count++;
+                }
+            }
+            return count;
+        }
+        
+        public static async Task<long> LongCountAsync<T>(this IEnumerable<T> collection, Func<T, Task<bool>> predicate)
+        {
+            Contract.Requires<ArgumentNullException>(collection != null);
+            Contract.Requires<ArgumentNullException>(predicate != null);
+
+            long count = 0;
+            foreach (T item in collection) {
                 if (await predicate(item).ConfigureAwait(false)) {
                     count++;
                 }

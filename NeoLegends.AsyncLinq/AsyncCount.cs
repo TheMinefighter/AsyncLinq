@@ -46,6 +46,20 @@ namespace System.Linq
             }
             return count;
         }
+        
+        public static async Task<int> CountAsync<T>(this IEnumerable<T> collection, Func<T, Task<bool>> predicate)
+        {
+            Contract.Requires<ArgumentNullException>(collection != null);
+            Contract.Requires<ArgumentNullException>(predicate != null);
+
+            int count = 0;
+            foreach (T item in collection) {
+                if (await predicate(item).ConfigureAwait(false)) {
+                    count++;
+                }
+            }
+            return count;
+        }
 
         public static async Task<int> CountAsync<T>(this IEnumerable<Task<T>> collection, Func<T, Task<bool>> predicate)
         {

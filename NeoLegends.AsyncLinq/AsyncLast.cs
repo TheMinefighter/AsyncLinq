@@ -107,6 +107,22 @@ namespace System.Linq
             throw new InvalidOperationException("Sequence contains no matching element");
         }
         
+        public static async Task<T> LastAsync<T>(this IEnumerable<T> collection, Func<T, Task<bool>> predicate)
+        {
+            Contract.Requires<ArgumentNullException>(collection != null);
+            Contract.Requires<ArgumentNullException>(predicate != null);
+
+            foreach (T item in collection.Reverse())
+            {
+                if (await predicate(item).ConfigureAwait(false))
+                {
+                    return item;
+                }
+            }
+
+            throw new InvalidOperationException("Sequence contains no matching element");
+        }
+        
         public static async Task<T> LastFinishedAsync<T>(this IEnumerable<Task<T>> collection, Func<T, Task<bool>> predicate)
         {
             Contract.Requires<ArgumentNullException>(collection != null);

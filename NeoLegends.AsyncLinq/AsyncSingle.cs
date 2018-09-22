@@ -128,5 +128,33 @@ namespace System.Linq
 
             return instanceFound;
         }
+        
+        public static async Task<T> SingleAsync<T>(this IEnumerable<T> collection, Func<T, Task<bool>> predicate)
+        {
+            Contract.Requires<ArgumentNullException>(collection != null);
+            Contract.Requires<ArgumentNullException>(predicate != null);
+            bool any = false;
+            T instanceFound = default(T); //default will never be returned only initializing that C# is happy
+            foreach (T item in collection)
+            {
+                if (await predicate(item).ConfigureAwait(false))
+                {
+                    if (any)
+                    {
+                        throw new InvalidOperationException("Sequence contains more than one matching element");
+                    }
+
+                    any = true;
+                    instanceFound = item;
+                }
+            }
+
+            if (!any)
+            {
+                throw new InvalidOperationException("Sequence contains no matching element");
+            }
+
+            return instanceFound;
+        }
     }
 }

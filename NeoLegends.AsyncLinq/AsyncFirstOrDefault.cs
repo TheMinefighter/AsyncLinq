@@ -131,5 +131,21 @@ namespace System.Linq
 
             return default(T);
         }
+        
+        public static async Task<T> FirstOrDefaultAsync<T>(this IEnumerable<T> collection, Func<T, Task<bool>> predicate)
+        {
+            Contract.Requires<ArgumentNullException>(collection != null);
+            Contract.Requires<ArgumentNullException>(predicate != null);
+
+            foreach (T item in collection)
+            {
+                if (await predicate(item).ConfigureAwait(false))
+                {
+                    return item;
+                }
+            }
+
+            return default(T);
+        }
     }
 }
